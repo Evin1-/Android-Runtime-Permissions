@@ -2,11 +2,15 @@ package com.example.runtimepermissions;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.CallLog;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,7 +51,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void printCallLog() {
-        Log.d(TAG, "printCallLog: ");
-    }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED) {
+            Cursor cursor = getContentResolver().query(CallLog.Calls.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    null);
 
+            while (cursor.moveToNext()) {
+                final long dateDialed = cursor.getLong(cursor.getColumnIndex(CallLog.Calls.DATE));
+                final String numberDialed = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
+                Log.d(TAG, "Call to number: " + numberDialed + "\t registered at: " + new Date(dateDialed).toString());
+            }
+
+            cursor.close();
+        }
+    }
 }
